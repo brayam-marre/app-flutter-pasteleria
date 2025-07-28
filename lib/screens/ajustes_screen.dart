@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/theme_provider.dart';
+import '../providers/unidad_provider.dart';
 
 class AjustesScreen extends StatelessWidget {
   const AjustesScreen({super.key});
@@ -12,55 +13,73 @@ class AjustesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajustes de Apariencia'),
+        title: const Text('Ajustes'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              'Elige una paleta de colores pastel',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Elige una paleta de colores pastel',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
 
-            // Tarjetas de tema
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                _buildThemeCard(
-                  context,
-                  themeProvider,
-                  AppTheme.rosado,
-                  'Rosado Pastel',
-                  [Color(0xFFFFB6C1), Colors.white],
-                  selectedTheme == AppTheme.rosado,
-                ),
-                _buildThemeCard(
-                  context,
-                  themeProvider,
-                  AppTheme.calipso,
-                  'Calipso Pastel',
-                  [Colors.teal[100]!, Colors.cyan[100]!],
-                  selectedTheme == AppTheme.calipso,
-                ),
-                _buildThemeCard(
-                  context,
-                  themeProvider,
-                  AppTheme.lavanda,
-                  'Lavanda Pastel',
-                  [Color(0xFFE6E6FA), Colors.deepPurple[100]!],
-                  selectedTheme == AppTheme.lavanda,
-                ),
-              ],
-            ),
-          ],
+              // Tarjetas de tema
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  _buildThemeCard(
+                    context,
+                    themeProvider,
+                    AppTheme.rosado,
+                    'Rosado Pastel',
+                    [const Color(0xFFFFB6C1), Colors.white],
+                    selectedTheme == AppTheme.rosado,
+                  ),
+                  _buildThemeCard(
+                    context,
+                    themeProvider,
+                    AppTheme.calipso,
+                    'Calipso Pastel',
+                    [Colors.teal[100]!, Colors.cyan[100]!],
+                    selectedTheme == AppTheme.calipso,
+                  ),
+                  _buildThemeCard(
+                    context,
+                    themeProvider,
+                    AppTheme.lavanda,
+                    'Lavanda Pastel',
+                    [const Color(0xFFE6E6FA), Colors.deepPurple[100]!],
+                    selectedTheme == AppTheme.lavanda,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+              const Text(
+                'Unidades de Medida',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  _abrirModalUnidades(context);
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text("Gestionar Unidades"),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  /// Tarjetas de selección de tema
   Widget _buildThemeCard(
       BuildContext context,
       ThemeProvider provider,
@@ -94,14 +113,125 @@ class AjustesScreen extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Modal para gestión de unidades
+  void _abrirModalUnidades(BuildContext context) {
+    final unidadProvider = Provider.of<UnidadProvider>(context, listen: false);
+    final TextEditingController controller = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Consumer<UnidadProvider>(
+                builder: (context, provider, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Unidades de Medida",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: provider.unidades.length,
+                        itemBuilder: (context, index) {
+                          final unidad = provider.unidades[index];
+                          return ListTile(
+                            title: Text(unidad.nombre),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () {
+                                    controller.text = unidad.nombre;
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text("Editar Unidad"),
+                                        content: TextField(
+                                          controller: controller,
+                                          decoration: const InputDecoration(hintText: "Ej: Litros"),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text("Cancelar"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              final nuevoNombre = controller.text.trim();
+                                              if (nuevoNombre.isNotEmpty) {
+                                                provider.editarUnidad(index, nuevoNombre);
+                                              }
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text("Guardar"),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => provider.eliminarUnidad(index),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            decoration: const InputDecoration(hintText: "Ej: Litros"),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            final nombre = controller.text.trim();
+                            if (nombre.isNotEmpty) {
+                              provider.agregarUnidad(nombre);
+                              controller.clear();
+                            }
+                          },
+                          child: const Text("Agregar"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -4,11 +4,15 @@ import 'screens/login_screen.dart';
 import 'screens/admin_dashboard.dart';
 import 'screens/ajustes_screen.dart';
 import 'theme/theme_provider.dart';
+import 'providers/unidad_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => UnidadProvider()), // Unidades
+      ],
       child: const PasteleriaApp(),
     ),
   );
