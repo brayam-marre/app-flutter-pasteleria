@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin_dashboard.dart';
+import 'screens/ajustes_screen.dart';
+import 'theme/theme_provider.dart';
 
 void main() {
-  runApp(const PasteleriaApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const PasteleriaApp(),
+    ),
+  );
 }
 
 class PasteleriaApp extends StatelessWidget {
@@ -11,21 +19,17 @@ class PasteleriaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
-      title: 'Pastelería Dulce Amor',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.pinkAccent,
-          primary: Colors.pink[200]!,
-          secondary: Colors.teal[100]!,
-        ),
-        useMaterial3: true,
-      ),
+      title: 'Pastelería Dulce Amor',
+      theme: themeProvider.themeData,
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
         '/admin': (context) => const AdminDashboard(),
+        '/ajustes': (context) => const AjustesScreen(),
       },
     );
   }

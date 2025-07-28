@@ -6,6 +6,9 @@ class AdminDashboard extends StatelessWidget {
   void _onMenuSelected(BuildContext context, String opcion) {
     if (opcion == 'logout') {
       Navigator.pushReplacementNamed(context, '/');
+    } else if (opcion == 'Ajustes') {
+      Navigator.pop(context);
+      Navigator.pushNamed(context, '/ajustes');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Seleccionaste: $opcion')),
@@ -15,10 +18,12 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Panel de Administración'),
-        backgroundColor: Colors.pink[200],
+        backgroundColor: colorScheme.primary,
       ),
       drawer: Drawer(
         child: ListView(
@@ -26,7 +31,7 @@ class AdminDashboard extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.pink[200],
+                color: colorScheme.primary,
               ),
               child: const Center(
                 child: Text(
@@ -72,12 +77,12 @@ class AdminDashboard extends StatelessWidget {
           ],
         ),
       ),
-      body: const Center(
+      body: Center(
         child: Text(
           '¡Bienvenida al panel de administración! 🎂',
           style: TextStyle(
             fontSize: 20,
-            color: Colors.teal,
+            color: colorScheme.secondary,
           ),
           textAlign: TextAlign.center,
         ),
