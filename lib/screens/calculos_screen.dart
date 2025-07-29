@@ -52,7 +52,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
               const Text('Productos:', style: TextStyle(fontWeight: FontWeight.bold)),
               ...productos.map((p) => ListTile(
                 title: Text(p.nombreProducto),
-                subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${p.costoUnitario.round()}'),
+                subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
               )),
             ],
           ),
@@ -78,6 +78,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
   void _mostrarFormularioReceta() {
     final nombreController = TextEditingController();
     final porcionesController = TextEditingController();
+    final gananciaController = TextEditingController();
     final cantidadController = TextEditingController();
     final costoController = TextEditingController();
     final unidadController = TextEditingController();
@@ -97,6 +98,11 @@ class _CalculosScreenState extends State<CalculosScreen> {
         child: StatefulBuilder(
           builder: (context, setModalState) {
             double total = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
+            double porcentajeGanancia = double.tryParse(gananciaController.text) ?? 0;
+            double precioConGanancia = total + (total * porcentajeGanancia / 100);
+            double porciones = double.tryParse(porcionesController.text) ?? 1;
+            double precioPorPorcion = precioConGanancia / porciones;
+
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,6 +116,11 @@ class _CalculosScreenState extends State<CalculosScreen> {
                     controller: porcionesController,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(labelText: 'Porciones'),
+                  ),
+                  TextField(
+                    controller: gananciaController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: '% Ganancia (ej: 20)'),
                   ),
                   const Divider(),
                   const Text('Agregar Producto'),
@@ -212,7 +223,9 @@ class _CalculosScreenState extends State<CalculosScreen> {
                     ),
                   )),
                   const SizedBox(height: 10),
-                  Text('Total: \$${total.round()}'),
+                  Text('Total sin ganancia: \$${total.round()}'),
+                  Text('Total con ganancia (${porcentajeGanancia.toStringAsFixed(0)}%): \$${precioConGanancia.round()}'),
+                  Text('Precio por porción: \$${precioPorPorcion.round()}'),
                   ElevatedButton.icon(
                     onPressed: () async {
                       final nombre = nombreController.text.trim();
