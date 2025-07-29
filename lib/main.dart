@@ -16,7 +16,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ⚠️ SOLO EJECUTAR UNA VEZ
-  await eliminarBaseDeDatos();
+  //await eliminarBaseDeDatos();
 
   runApp(
     MultiProvider(
@@ -31,7 +31,7 @@ Future<void> main() async {
 
 Future<void> eliminarBaseDeDatos() async {
   final path = join(await getDatabasesPath(), 'productos.db');
-  //await deleteDatabase(path);
+  await deleteDatabase(path);
   print('✅ Base de datos eliminada exitosamente');
 }
 
@@ -44,7 +44,7 @@ class PasteleriaApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Pastelería Dulce Amor',
+      title: 'Pastelería Dulce Tentación',
       theme: themeProvider.themeData,
       initialRoute: '/',
       routes: {

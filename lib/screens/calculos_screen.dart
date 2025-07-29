@@ -25,7 +25,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
 
   Future<void> _cargarDatos() async {
     final data = await DatabaseHelper().obtenerRecetas();
-    final productos = await DatabaseHelper().obtenerProductos(); // corregido aquí
+    final productos = await DatabaseHelper().obtenerProductos();
     setState(() {
       recetas = data;
       inventario = productos;
@@ -80,6 +80,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
     final porcionesController = TextEditingController();
     final cantidadController = TextEditingController();
     final costoController = TextEditingController();
+    final unidadController = TextEditingController();
     Producto? productoSeleccionado;
     List<RecetaProducto> productos = [];
 
@@ -120,6 +121,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
                     displayStringForOption: (p) => p.nombre,
                     onSelected: (producto) {
                       productoSeleccionado = producto;
+                      unidadController.text = producto.unidad;
                       costoController.text = producto.valor.toStringAsFixed(0);
                     },
                     fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
@@ -133,14 +135,16 @@ class _CalculosScreenState extends State<CalculosScreen> {
                   Consumer<UnidadProvider>(
                     builder: (context, unidadProvider, _) {
                       return DropdownButtonFormField<String>(
-                        value: productoSeleccionado?.unidad,
+                        value: unidadController.text.isNotEmpty ? unidadController.text : null,
                         items: unidadProvider.unidades.map((u) {
                           return DropdownMenuItem<String>(
                             value: u.nombre,
                             child: Text(u.nombre),
                           );
                         }).toList(),
-                        onChanged: (_) {},
+                        onChanged: (value) {
+                          unidadController.text = value ?? '';
+                        },
                         decoration: const InputDecoration(labelText: 'Unidad'),
                       );
                     },
@@ -158,21 +162,41 @@ class _CalculosScreenState extends State<CalculosScreen> {
                   ElevatedButton.icon(
                     onPressed: () {
                       final cantidad = double.tryParse(cantidadController.text) ?? 0;
-                      final costo = double.tryParse(costoController.text) ?? 0;
-                      if (productoSeleccionado == null || cantidad <= 0 || costo <= 0) return;
+                      String unidadUsada = unidadController.text;
+                      if (productoSeleccionado == null || cantidad <= 0 || unidadUsada.isEmpty) return;
+
+                      double valorProducto = productoSeleccionado!.valor;
+                      double cantidadOriginal = productoSeleccionado!.cantidad;
+                      String unidadOriginal = productoSeleccionado!.unidad;
+                      double costoUnitarioCalculado;
+
+                      if (unidadOriginal == unidadUsada) {
+                        costoUnitarioCalculado = (valorProducto / cantidadOriginal) * cantidad;
+                      } else if (unidadOriginal == 'Kilogramos' && unidadUsada == 'Gramos') {
+                        costoUnitarioCalculado = (valorProducto / 1000) * cantidad;
+                      } else if (unidadOriginal == 'Gramos' && unidadUsada == 'Kilogramos') {
+                        costoUnitarioCalculado = (valorProducto * 1000) * cantidad;
+                      } else if (unidadOriginal == 'Litros' && unidadUsada == 'Mililitros') {
+                        costoUnitarioCalculado = (valorProducto / 1000) * cantidad;
+                      } else if (unidadOriginal == 'Mililitros' && unidadUsada == 'Litros') {
+                        costoUnitarioCalculado = (valorProducto * 1000) * cantidad;
+                      } else {
+                        costoUnitarioCalculado = valorProducto;
+                      }
 
                       setModalState(() {
                         productos.add(RecetaProducto(
                           idReceta: 0,
                           nombreProducto: productoSeleccionado!.nombre,
-                          unidad: productoSeleccionado!.unidad,
+                          unidad: unidadUsada,
                           cantidadUsada: cantidad,
-                          costoUnitario: costo,
+                          costoUnitario: costoUnitarioCalculado,
                         ));
                       });
 
                       cantidadController.clear();
                       costoController.clear();
+                      unidadController.clear();
                       productoSeleccionado = null;
                     },
                     icon: const Icon(Icons.add),
