@@ -4,15 +4,38 @@ class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
   void _onMenuSelected(BuildContext context, String opcion) {
-    if (opcion == 'logout') {
-      Navigator.pushReplacementNamed(context, '/');
-    } else if (opcion == 'Ajustes') {
-      Navigator.pop(context);
-      Navigator.pushNamed(context, '/ajustes');
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Seleccionaste: $opcion')),
-      );
+    Navigator.pop(context); // Cierra el drawer
+
+    switch (opcion) {
+      case 'Inicio':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pantalla de Inicio aún no implementada')),
+        );
+        break;
+      case 'Pedidos':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pantalla de Pedidos aún no implementada')),
+        );
+        break;
+      case 'Cálculos':
+        Navigator.pushNamed(context, '/calculos');
+        break;
+      case 'Compras':
+        Navigator.pushNamed(context, '/compras');
+        break;
+      case 'Productos':
+        Navigator.pushNamed(context, '/productos');
+        break;
+      case 'Ajustes':
+        Navigator.pushNamed(context, '/ajustes');
+        break;
+      case 'logout':
+        Navigator.pushReplacementNamed(context, '/');
+        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Seleccionaste: $opcion')),
+        );
     }
   }
 
@@ -62,6 +85,11 @@ class AdminDashboard extends StatelessWidget {
               leading: const Icon(Icons.shopping_cart_outlined),
               title: const Text('Compras'),
               onTap: () => _onMenuSelected(context, 'Compras'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.inventory_2_outlined),
+              title: const Text('Productos'),
+              onTap: () => _onMenuSelected(context, 'Productos'),
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
