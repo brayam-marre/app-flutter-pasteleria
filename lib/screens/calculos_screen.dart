@@ -171,17 +171,17 @@ class _CalculosScreenState extends State<CalculosScreen> {
                       double costoUnitarioCalculado;
 
                       if (unidadOriginal == unidadUsada) {
-                        costoUnitarioCalculado = (valorProducto / cantidadOriginal) * cantidad;
+                        costoUnitarioCalculado = valorProducto / cantidadOriginal;
                       } else if (unidadOriginal == 'Kilogramos' && unidadUsada == 'Gramos') {
-                        costoUnitarioCalculado = (valorProducto / 1000) * cantidad;
+                        costoUnitarioCalculado = valorProducto / 1000;
                       } else if (unidadOriginal == 'Gramos' && unidadUsada == 'Kilogramos') {
-                        costoUnitarioCalculado = (valorProducto * 1000) * cantidad;
+                        costoUnitarioCalculado = valorProducto * 1000;
                       } else if (unidadOriginal == 'Litros' && unidadUsada == 'Mililitros') {
-                        costoUnitarioCalculado = (valorProducto / 1000) * cantidad;
+                        costoUnitarioCalculado = valorProducto / 1000;
                       } else if (unidadOriginal == 'Mililitros' && unidadUsada == 'Litros') {
-                        costoUnitarioCalculado = (valorProducto * 1000) * cantidad;
+                        costoUnitarioCalculado = valorProducto * 1000;
                       } else {
-                        costoUnitarioCalculado = valorProducto;
+                        costoUnitarioCalculado = valorProducto / cantidadOriginal;
                       }
 
                       setModalState(() {
@@ -205,7 +205,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
                   const Divider(),
                   ...productos.map((p) => ListTile(
                     title: Text(p.nombreProducto),
-                    subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${p.costoUnitario.round()}'),
+                    subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => setModalState(() => productos.remove(p)),
