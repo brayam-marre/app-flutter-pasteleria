@@ -17,16 +17,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   final List<Widget> _pantallas = [
     const InicioScreen(),
+    const CalculosScreen(),
     const ComprasScreen(),
     const ProductosScreen(),
-    const CalculosScreen(),
   ];
 
   final List<String> _titulos = [
     'Inicio',
+    'Cálculos',
     'Compras',
     'Productos',
-    'Cálculos',
   ];
 
   void _onBottomNavTapped(int index) {
@@ -78,9 +78,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Cálculos'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Compras'),
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Productos'),
-          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Cálculos'),
         ],
       ),
     );
