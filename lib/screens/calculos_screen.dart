@@ -4,6 +4,7 @@ import '../models/receta_producto.dart';
 import '../models/producto.dart';
 import '../db/database_helper.dart';
 import 'crear_receta_screen.dart';
+import 'modificar_receta_screen.dart';
 
 class CalculosScreen extends StatefulWidget {
   const CalculosScreen({super.key});
@@ -75,7 +76,8 @@ class _CalculosScreenState extends State<CalculosScreen> {
                 const Text('Productos:', style: TextStyle(fontWeight: FontWeight.bold)),
                 ...productos.map((p) => ListTile(
                   title: Text(p.nombreProducto),
-                  subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
+                  subtitle: Text(
+                      '${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
                 )),
               ],
             ),
@@ -88,6 +90,21 @@ class _CalculosScreenState extends State<CalculosScreen> {
                 _cargarDatos();
               },
               child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final resultado = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ModificarRecetaScreen(recetaId: receta.id!),
+                  ),
+                );
+                if (resultado == true) {
+                  _cargarDatos();
+                }
+              },
+              child: const Text('Modificar'),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context),

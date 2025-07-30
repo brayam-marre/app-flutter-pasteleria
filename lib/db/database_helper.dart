@@ -144,6 +144,30 @@ class DatabaseHelper {
     await db.delete('receta_productos', where: 'idReceta = ?', whereArgs: [id]);
     return await db.delete('recetas', where: 'id = ?', whereArgs: [id]);
   }
+  Future<Receta?> obtenerRecetaPorId(int id) async {
+    final db = await database;
+    final maps = await db.query(
+      'recetas',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return Receta.fromMap(maps.first);
+    } else {
+      return null;
+    }
+  }
+
+  Future<void> eliminarProductosDeReceta(int idReceta) async {
+    final db = await database;
+    await db.delete(
+      'receta_productos',
+      where: 'idReceta = ?',
+      whereArgs: [idReceta],
+    );
+  }
+
 
   // ------------------- PRODUCTOS DE RECETA -------------------
   Future<int> insertarProductoDeReceta(RecetaProducto producto) async {
