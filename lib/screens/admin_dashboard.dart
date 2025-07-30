@@ -1,41 +1,51 @@
 import 'package:flutter/material.dart';
+import 'compras_screen.dart';
+import 'productos_screen.dart';
+import 'calculos_screen.dart';
+import 'clientes_screen.dart';
+import 'inicio_screen.dart'; // Pantalla blanca por ahora
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 
-  void _onMenuSelected(BuildContext context, String opcion) {
-    Navigator.pop(context); // Cierra el drawer
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
 
+class _AdminDashboardState extends State<AdminDashboard> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pantallas = [
+    const InicioScreen(),
+    const ComprasScreen(),
+    const ProductosScreen(),
+    const CalculosScreen(),
+  ];
+
+  final List<String> _titulos = [
+    'Inicio',
+    'Compras',
+    'Productos',
+    'Cálculos',
+  ];
+
+  void _onBottomNavTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _onMenuSelected(String opcion) {
     switch (opcion) {
-      case 'Inicio':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pantalla de Inicio aún no implementada')),
-        );
-        break;
-      case 'Pedidos':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pantalla de Pedidos aún no implementada')),
-        );
-        break;
-      case 'Cálculos':
-        Navigator.pushNamed(context, '/calculos');
-        break;
-      case 'Compras':
-        Navigator.pushNamed(context, '/compras');
-        break;
-      case 'Productos':
-        Navigator.pushNamed(context, '/productos');
+      case 'Clientes':
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ClientesScreen()));
         break;
       case 'Ajustes':
         Navigator.pushNamed(context, '/ajustes');
         break;
-      case 'logout':
+      case 'Cerrar Sesión':
         Navigator.pushReplacementNamed(context, '/');
         break;
-      default:
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Seleccionaste: $opcion')),
-        );
     }
   }
 
@@ -45,75 +55,33 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Panel de Administración'),
         backgroundColor: colorScheme.primary,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-              ),
-              child: const Center(
-                child: Text(
-                  'Dulce Tentación 💕',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Inicio'),
-              onTap: () => _onMenuSelected(context, 'Inicio'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.list_alt),
-              title: const Text('Pedidos'),
-              onTap: () => _onMenuSelected(context, 'Pedidos'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.calculate_outlined),
-              title: const Text('Cálculos'),
-              onTap: () => _onMenuSelected(context, 'Cálculos'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart_outlined),
-              title: const Text('Compras'),
-              onTap: () => _onMenuSelected(context, 'Compras'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('Productos'),
-              onTap: () => _onMenuSelected(context, 'Productos'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Ajustes'),
-              onTap: () => _onMenuSelected(context, 'Ajustes'),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Cerrar Sesión'),
-              onTap: () => _onMenuSelected(context, 'logout'),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Text(
-          '¡Bienvenida al panel de administración! 🎂',
-          style: TextStyle(
-            fontSize: 20,
-            color: colorScheme.secondary,
+        title: Text(_titulos[_selectedIndex]),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: _onMenuSelected,
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'Clientes', child: Text('Clientes')),
+              PopupMenuItem(value: 'Ajustes', child: Text('Ajustes')),
+              PopupMenuItem(value: 'Cerrar Sesión', child: Text('Cerrar sesión')),
+            ],
           ),
-          textAlign: TextAlign.center,
-        ),
+        ],
+      ),
+      body: _pantallas[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavTapped,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Compras'),
+          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Productos'),
+          BottomNavigationBarItem(icon: Icon(Icons.calculate), label: 'Cálculos'),
+        ],
       ),
     );
   }

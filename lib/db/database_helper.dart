@@ -21,9 +21,9 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'productos.db');
     return await openDatabase(
       path,
-      version: 2, // 🔺 Subimos la versión a 2
+      version: 3, // 🔺 Nueva versión
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade, // 🔺 Soportamos actualización
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -42,7 +42,8 @@ class DatabaseHelper {
       CREATE TABLE recetas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT,
-        porciones INTEGER
+        porciones INTEGER,
+        porcentajeGanancia REAL DEFAULT 0
       )
     ''');
 
@@ -80,10 +81,12 @@ class DatabaseHelper {
     ''');
   }
 
-  // 🔄 Soporte para migración
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE productos ADD COLUMN valor REAL DEFAULT 0');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE recetas ADD COLUMN porcentajeGanancia REAL DEFAULT 0');
     }
   }
 
@@ -94,12 +97,6 @@ class DatabaseHelper {
   }
 
   Future<List<Producto>> obtenerProductos() async {
-    final db = await database;
-    final result = await db.query('productos');
-    return result.map((e) => Producto.fromMap(e)).toList();
-  }
-
-  Future<List<Producto>> obtenerProductosInventario() async {
     final db = await database;
     final result = await db.query('productos');
     return result.map((e) => Producto.fromMap(e)).toList();

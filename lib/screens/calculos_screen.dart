@@ -37,6 +37,12 @@ class _CalculosScreenState extends State<CalculosScreen> {
     final costoTotal = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
     final costoPorPorcion = receta.porciones > 0 ? costoTotal / receta.porciones : 0.0;
 
+    // Suponiendo que tienes un campo en Receta que guarda el % de ganancia (por defecto usa 0 si no existe)
+    final porcentajeGanancia = receta.porcentajeGanancia ?? 0;
+    final ganancia = costoTotal * (porcentajeGanancia / 100);
+    final precioVentaTotal = costoTotal + ganancia;
+    final precioPorPorcion = receta.porciones > 0 ? precioVentaTotal / receta.porciones : 0;
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -47,7 +53,9 @@ class _CalculosScreenState extends State<CalculosScreen> {
             children: [
               Text('Porciones: ${receta.porciones}'),
               Text('Costo total: \$${costoTotal.round()}'),
-              Text('Costo por porción: \$${costoPorPorcion.round()}'),
+              Text('Ganancia: ${porcentajeGanancia.toStringAsFixed(0)}% (\$${ganancia.round()})'),
+              Text('Precio de venta total: \$${precioVentaTotal.round()}'),
+              Text('Precio por porción: \$${precioPorPorcion.round()}'),
               const Divider(),
               const Text('Productos:', style: TextStyle(fontWeight: FontWeight.bold)),
               ...productos.map((p) => ListTile(
@@ -98,11 +106,6 @@ class _CalculosScreenState extends State<CalculosScreen> {
         child: StatefulBuilder(
           builder: (context, setModalState) {
             double total = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
-            double porcentajeGanancia = double.tryParse(gananciaController.text) ?? 0;
-            double precioConGanancia = total + (total * porcentajeGanancia / 100);
-            double porciones = double.tryParse(porcionesController.text) ?? 1;
-            double precioPorPorcion = precioConGanancia / porciones;
-
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,7 +123,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
                   TextField(
                     controller: gananciaController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: '% Ganancia (ej: 20)'),
+                    decoration: const InputDecoration(labelText: '% Ganancia'),
                   ),
                   const Divider(),
                   const Text('Agregar Producto'),
@@ -223,16 +226,20 @@ class _CalculosScreenState extends State<CalculosScreen> {
                     ),
                   )),
                   const SizedBox(height: 10),
-                  Text('Total sin ganancia: \$${total.round()}'),
-                  Text('Total con ganancia (${porcentajeGanancia.toStringAsFixed(0)}%): \$${precioConGanancia.round()}'),
-                  Text('Precio por porción: \$${precioPorPorcion.round()}'),
+                  Text('Total costo: \$${total.round()}'),
                   ElevatedButton.icon(
                     onPressed: () async {
                       final nombre = nombreController.text.trim();
                       final porciones = int.tryParse(porcionesController.text) ?? 1;
+                      final ganancia = double.tryParse(gananciaController.text) ?? 0;
                       if (nombre.isEmpty || productos.isEmpty) return;
 
-                      final receta = Receta(nombre: nombre, porciones: porciones);
+                      final receta = Receta(
+                        nombre: nombre,
+                        porciones: porciones,
+                        porcentajeGanancia: ganancia,
+                      );
+
                       final recetaId = await DatabaseHelper().insertarReceta(receta);
                       for (final p in productos) {
                         await DatabaseHelper().insertarProductoDeReceta(p.copyWith(idReceta: recetaId));
