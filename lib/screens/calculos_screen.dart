@@ -7,7 +7,9 @@ import 'crear_receta_screen.dart';
 import 'modificar_receta_screen.dart';
 
 class CalculosScreen extends StatefulWidget {
-  const CalculosScreen({super.key});
+  final int idUsuario; // ✅ Añadido para filtrar por usuario
+
+  const CalculosScreen({super.key, required this.idUsuario});
 
   @override
   State<CalculosScreen> createState() => _CalculosScreenState();
@@ -24,8 +26,8 @@ class _CalculosScreenState extends State<CalculosScreen> {
   }
 
   Future<void> _cargarDatos() async {
-    final data = await DatabaseHelper().obtenerRecetas();
-    final productos = await DatabaseHelper().obtenerProductos();
+    final data = await DatabaseHelper().obtenerRecetas(widget.idUsuario); // ✅ Filtra por usuario
+    final productos = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Filtra por usuario
     setState(() {
       recetas = data;
       inventario = productos;
@@ -37,7 +39,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
     final costoTotal = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
     final costoPorPorcion = receta.porciones > 0 ? costoTotal / receta.porciones : 0.0;
 
-    double porcentajeGanancia = receta.porcentajeGanancia ?? 0;
+    double porcentajeGanancia = receta.porcentajeGanancia;
     double ganancia = costoTotal * (porcentajeGanancia / 100);
     double precioVentaTotal = costoTotal + ganancia;
     double precioPorPorcion = receta.porciones > 0 ? precioVentaTotal / receta.porciones : 0;
@@ -76,8 +78,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
                 const Text('Productos:', style: TextStyle(fontWeight: FontWeight.bold)),
                 ...productos.map((p) => ListTile(
                   title: Text(p.nombreProducto),
-                  subtitle: Text(
-                      '${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
+                  subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
                 )),
               ],
             ),
@@ -97,7 +98,10 @@ class _CalculosScreenState extends State<CalculosScreen> {
                 final resultado = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ModificarRecetaScreen(recetaId: receta.id!),
+                    builder: (_) => ModificarRecetaScreen(
+                      recetaId: receta.id!,
+                      idUsuario: widget.idUsuario, // ✅ Pasa el idUsuario también si es necesario
+                    ),
                   ),
                 );
                 if (resultado == true) {
@@ -119,7 +123,9 @@ class _CalculosScreenState extends State<CalculosScreen> {
   void _navegarACrearReceta() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CrearRecetaScreen()),
+      MaterialPageRoute(
+        builder: (_) => CrearRecetaScreen(idUsuario: widget.idUsuario), // ✅ Pasa el idUsuario
+      ),
     );
     if (resultado == true) {
       _cargarDatos();

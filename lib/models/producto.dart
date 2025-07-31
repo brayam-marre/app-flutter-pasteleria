@@ -4,6 +4,7 @@ class Producto {
   String unidad;
   double cantidad;
   double valor;
+  int? idUsuario; // 🔹 Nuevo campo
 
   Producto({
     this.id,
@@ -11,6 +12,7 @@ class Producto {
     required this.unidad,
     required this.cantidad,
     required this.valor,
+    this.idUsuario,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class Producto {
       'unidad': unidad,
       'cantidad': cantidad,
       'valor': valor,
+      'idUsuario': idUsuario, // 🔹 Incluido en el mapa
     };
   }
 
@@ -30,6 +33,7 @@ class Producto {
       unidad: map['unidad'],
       cantidad: (map['cantidad'] ?? 0).toDouble(),
       valor: (map['valor'] ?? 0).toDouble(),
+      idUsuario: map['idUsuario'], // 🔹 Lo recuperamos del mapa
     );
   }
 }

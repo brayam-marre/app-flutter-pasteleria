@@ -9,7 +9,9 @@ import '../db/database_helper.dart';
 import '../providers/unidad_provider.dart';
 
 class CrearRecetaScreen extends StatefulWidget {
-  const CrearRecetaScreen({super.key});
+  final int idUsuario; // ✅ Se agregó el campo requerido
+
+  const CrearRecetaScreen({super.key, required this.idUsuario});
 
   @override
   State<CrearRecetaScreen> createState() => _CrearRecetaScreenState();
@@ -35,7 +37,7 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
   }
 
   Future<void> cargarInventario() async {
-    final data = await DatabaseHelper().obtenerProductos();
+    final data = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Filtrar por usuario
     setState(() {
       inventario = data;
     });
@@ -52,9 +54,11 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
       nombre: nombre,
       porciones: porciones,
       porcentajeGanancia: ganancia,
+      idUsuario: widget.idUsuario, // ✅ Asociar receta al usuario
     );
 
-    final recetaId = await DatabaseHelper().insertarReceta(receta);
+    final recetaId = await DatabaseHelper().insertarReceta(receta, widget.idUsuario);
+
     for (final p in productos) {
       await DatabaseHelper().insertarProductoDeReceta(p.copyWith(idReceta: recetaId));
     }
@@ -62,7 +66,8 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
     Navigator.pop(context, true);
   }
 
-  @override
+
+@override
   Widget build(BuildContext context) {
     double total = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
     double ganancia = double.tryParse(gananciaController.text) ?? 0;

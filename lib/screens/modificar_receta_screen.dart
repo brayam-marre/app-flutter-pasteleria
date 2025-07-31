@@ -1,5 +1,3 @@
-// archivo: lib/screens/modificar_receta_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/receta.dart';
@@ -10,8 +8,13 @@ import '../providers/unidad_provider.dart';
 
 class ModificarRecetaScreen extends StatefulWidget {
   final int recetaId;
+  final int idUsuario; // 🆕 Identificador del usuario
 
-  const ModificarRecetaScreen({super.key, required this.recetaId});
+  const ModificarRecetaScreen({
+    super.key,
+    required this.recetaId,
+    required this.idUsuario,
+  });
 
   @override
   State<ModificarRecetaScreen> createState() => _ModificarRecetaScreenState();
@@ -40,7 +43,7 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
   Future<void> _cargarDatos() async {
     final receta = await DatabaseHelper().obtenerRecetaPorId(widget.recetaId);
     final productosReceta = await DatabaseHelper().obtenerProductosDeReceta(widget.recetaId);
-    final inventarioData = await DatabaseHelper().obtenerProductos();
+    final inventarioData = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Corregido
 
     setState(() {
       recetaOriginal = receta;
@@ -65,6 +68,7 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
       nombre: nombre,
       porciones: porciones,
       porcentajeGanancia: ganancia,
+      idUsuario: widget.idUsuario,
     );
 
     await DatabaseHelper().actualizarReceta(recetaModificada);

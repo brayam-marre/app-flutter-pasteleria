@@ -3,12 +3,14 @@ class Receta {
   String nombre;
   int porciones;
   double porcentajeGanancia;
+  int? idUsuario; // 🔹 Nuevo campo
 
   Receta({
     this.id,
     required this.nombre,
     required this.porciones,
     this.porcentajeGanancia = 0.0,
+    this.idUsuario,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class Receta {
       'nombre': nombre,
       'porciones': porciones,
       'porcentajeGanancia': porcentajeGanancia,
+      'idUsuario': idUsuario, // 🔹 Incluido
     };
   }
 
@@ -26,6 +29,7 @@ class Receta {
       nombre: map['nombre'],
       porciones: map['porciones'],
       porcentajeGanancia: map['porcentajeGanancia']?.toDouble() ?? 0.0,
+      idUsuario: map['idUsuario'], // 🔹 Lo recuperamos
     );
   }
 }

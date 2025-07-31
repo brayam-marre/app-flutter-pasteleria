@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../db/database_helper.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,12 +21,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final usuario = await db.validarUsuario(_userController.text, _passController.text);
 
     if (usuario != null) {
+      // Guardar usuario en el AuthProvider
+      Provider.of<AuthProvider>(context, listen: false).login(usuario);
+
       final rol = usuario['rol'];
-      if (rol == 'administrador') {
-        Navigator.pushReplacementNamed(context, '/admin');
-      } else {
-        Navigator.pushReplacementNamed(context, '/usuario');
-      }
+      Navigator.pushReplacementNamed(context, '/admin');
+
     } else {
       setState(() => _error = 'Credenciales incorrectas');
     }

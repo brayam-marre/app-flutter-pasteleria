@@ -5,7 +5,9 @@ import '../db/database_helper.dart';
 import '../providers/unidad_provider.dart';
 
 class ProductosScreen extends StatefulWidget {
-  const ProductosScreen({super.key});
+  final int idUsuario;
+
+  const ProductosScreen({super.key, required this.idUsuario});
 
   @override
   State<ProductosScreen> createState() => _ProductosScreenState();
@@ -21,7 +23,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   Future<void> _cargarProductos() async {
-    final data = await DatabaseHelper().obtenerProductos();
+    final data = await DatabaseHelper().obtenerProductos(widget.idUsuario);
     setState(() => productos = data);
   }
 
@@ -98,6 +100,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                               unidad: unidad,
                               cantidad: peso,
                               valor: valor,
+                              idUsuario: widget.idUsuario,
                             ),
                           );
                         } else {
@@ -108,6 +111,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                               unidad: unidad,
                               cantidad: peso,
                               valor: valor,
+                              idUsuario: widget.idUsuario,
                             ),
                           );
                         }

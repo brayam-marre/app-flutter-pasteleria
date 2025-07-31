@@ -1,14 +1,16 @@
 class Compra {
-  final int? id;
-  final String nombre;
-  final String fecha;
-  final double total;
+  int? id;
+  String nombre;
+  String fecha;
+  double total;
+  int? idUsuario; // ✅ Agregado
 
   Compra({
     this.id,
     required this.nombre,
     required this.fecha,
     required this.total,
+    this.idUsuario, // ✅ Incluido en el constructor
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class Compra {
       'nombre': nombre,
       'fecha': fecha,
       'total': total,
+      'idUsuario': idUsuario, // ✅ Agregado en el mapa
     };
   }
 
@@ -25,7 +28,8 @@ class Compra {
       id: map['id'],
       nombre: map['nombre'],
       fecha: map['fecha'],
-      total: map['total'],
+      total: (map['total'] ?? 0).toDouble(),
+      idUsuario: map['idUsuario'], // ✅ Agregado en el fromMap
     );
   }
 }

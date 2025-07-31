@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../theme/theme_provider.dart';
 import '../providers/unidad_provider.dart';
+import '../providers/auth_provider.dart';
+import '../screens/usuarios_screen.dart';
 
 class AjustesScreen extends StatelessWidget {
   const AjustesScreen({super.key});
@@ -10,6 +13,7 @@ class AjustesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final selectedTheme = themeProvider.currentTheme;
+    final usuario = Provider.of<AuthProvider>(context).usuarioActual;
 
     return Scaffold(
       appBar: AppBar(
@@ -26,8 +30,6 @@ class AjustesScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
-
-              // Tarjetas de tema
               Wrap(
                 spacing: 16,
                 runSpacing: 16,
@@ -58,7 +60,6 @@ class AjustesScreen extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: 40),
               const Text(
                 'Unidades de Medida',
@@ -66,12 +67,31 @@ class AjustesScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               ElevatedButton.icon(
-                onPressed: () {
-                  _abrirModalUnidades(context);
-                },
+                onPressed: () => _abrirModalUnidades(context),
                 icon: const Icon(Icons.settings),
                 label: const Text("Gestionar Unidades"),
               ),
+              const SizedBox(height: 30),
+
+              // Mostrar solo si es administrador
+              if (usuario?['rol'] == 'administrador') ...[
+                const Divider(height: 32),
+                const Text(
+                  'Gestión de Usuarios',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.supervisor_account),
+                  label: const Text('Administrar Usuarios'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const UsuariosScreen()),
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -79,7 +99,6 @@ class AjustesScreen extends StatelessWidget {
     );
   }
 
-  /// Tarjetas de selección de tema
   Widget _buildThemeCard(
       BuildContext context,
       ThemeProvider provider,
@@ -124,7 +143,6 @@ class AjustesScreen extends StatelessWidget {
     );
   }
 
-  /// Modal para gestión de unidades
   void _abrirModalUnidades(BuildContext context) {
     final unidadProvider = Provider.of<UnidadProvider>(context, listen: false);
     final TextEditingController controller = TextEditingController();

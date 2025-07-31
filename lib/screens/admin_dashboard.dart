@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'inicio_screen.dart';
+import 'calculos_screen.dart';
 import 'compras_screen.dart';
 import 'productos_screen.dart';
-import 'calculos_screen.dart';
 import 'clientes_screen.dart';
-import 'inicio_screen.dart'; // Pantalla blanca por ahora
+import '../providers/auth_provider.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -15,12 +18,20 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pantallas = [
-    const InicioScreen(),
-    const CalculosScreen(),
-    const ComprasScreen(),
-    const ProductosScreen(),
-  ];
+  late final List<Widget> _pantallas;
+
+  @override
+  void initState() {
+    super.initState();
+    final idUsuario = Provider.of<AuthProvider>(context, listen: false).usuarioActual?['id'];
+    _pantallas = [
+      const InicioScreen(),
+      CalculosScreen(idUsuario: idUsuario),
+      ComprasScreen(idUsuario: idUsuario),
+      ProductosScreen(idUsuario: idUsuario),
+    ];
+  }
+
 
   final List<String> _titulos = [
     'Inicio',
@@ -51,6 +62,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final esAdmin = auth.usuarioActual?['rol'] == 'administrador';
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -61,10 +74,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           PopupMenuButton<String>(
             onSelected: _onMenuSelected,
             icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'Clientes', child: Text('Clientes')),
-              PopupMenuItem(value: 'Ajustes', child: Text('Ajustes')),
-              PopupMenuItem(value: 'Cerrar Sesión', child: Text('Cerrar sesión')),
+            itemBuilder: (context) => [
+              if (esAdmin)
+                const PopupMenuItem(value: 'Clientes', child: Text('Clientes')),
+              if (esAdmin)
+                const PopupMenuItem(value: 'Ajustes', child: Text('Ajustes')),
+              const PopupMenuItem(value: 'Cerrar Sesión', child: Text('Cerrar sesión')),
             ],
           ),
         ],

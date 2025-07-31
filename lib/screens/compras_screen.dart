@@ -4,9 +4,12 @@ import '../models/compra.dart';
 import '../models/compra_producto.dart';
 import '../db/database_helper.dart';
 import '../providers/unidad_provider.dart';
+import '../providers/auth_provider.dart'; // ✅ Importar AuthProvider
 
 class ComprasScreen extends StatefulWidget {
-  const ComprasScreen({super.key});
+  final int idUsuario; // ✅ Recibir idUsuario
+
+  const ComprasScreen({super.key, required this.idUsuario});
 
   @override
   State<ComprasScreen> createState() => _ComprasScreenState();
@@ -22,7 +25,7 @@ class _ComprasScreenState extends State<ComprasScreen> {
   }
 
   Future<void> _cargarCompras() async {
-    final data = await DatabaseHelper().obtenerCompras();
+    final data = await DatabaseHelper().obtenerCompras(widget.idUsuario); // ✅ Filtrar por usuario
     setState(() => compras = data);
   }
 
@@ -157,6 +160,7 @@ class _ComprasScreenState extends State<ComprasScreen> {
                           nombre: nombre,
                           fecha: DateTime.now().toIso8601String(),
                           total: total,
+                          idUsuario: widget.idUsuario, // ✅ Asignar al usuario
                         );
                         final compraId = await DatabaseHelper().insertarCompra(compra);
 
