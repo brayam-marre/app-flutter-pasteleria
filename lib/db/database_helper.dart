@@ -21,7 +21,7 @@ class DatabaseHelper {
     final path = join(await getDatabasesPath(), 'productos.db');
     return await openDatabase(
       path,
-      version: 3, // 🔺 Nueva versión
+      version: 4, // Incrementa si ya tenías versión 3
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -79,6 +79,27 @@ class DatabaseHelper {
         FOREIGN KEY (idCompra) REFERENCES compras(id) ON DELETE CASCADE
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE usuarios(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT,
+        rol TEXT
+      )
+    ''');
+
+    await db.insert('usuarios', {
+      'username': 'josy',
+      'password': 'josy8512',
+      'rol': 'administrador'
+    });
+
+    await db.insert('usuarios', {
+      'username': 'usuario',
+      'password': 'usuario123',
+      'rol': 'usuario'
+    });
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -88,6 +109,27 @@ class DatabaseHelper {
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE recetas ADD COLUMN porcentajeGanancia REAL DEFAULT 0');
     }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE usuarios(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT UNIQUE,
+          password TEXT,
+          rol TEXT
+        )
+      ''');
+    }
+  }
+
+  // ------------------- LOGIN -------------------
+  Future<Map<String, dynamic>?> validarUsuario(String username, String password) async {
+    final db = await database;
+    final result = await db.query(
+      'usuarios',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    return result.isNotEmpty ? result.first : null;
   }
 
   // ------------------- PRODUCTOS -------------------
@@ -144,30 +186,17 @@ class DatabaseHelper {
     await db.delete('receta_productos', where: 'idReceta = ?', whereArgs: [id]);
     return await db.delete('recetas', where: 'id = ?', whereArgs: [id]);
   }
+
   Future<Receta?> obtenerRecetaPorId(int id) async {
     final db = await database;
-    final maps = await db.query(
-      'recetas',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isNotEmpty) {
-      return Receta.fromMap(maps.first);
-    } else {
-      return null;
-    }
+    final result = await db.query('recetas', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty ? Receta.fromMap(result.first) : null;
   }
 
   Future<void> eliminarProductosDeReceta(int idReceta) async {
     final db = await database;
-    await db.delete(
-      'receta_productos',
-      where: 'idReceta = ?',
-      whereArgs: [idReceta],
-    );
+    await db.delete('receta_productos', where: 'idReceta = ?', whereArgs: [idReceta]);
   }
-
 
   // ------------------- PRODUCTOS DE RECETA -------------------
   Future<int> insertarProductoDeReceta(RecetaProducto producto) async {

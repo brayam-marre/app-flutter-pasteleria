@@ -1,7 +1,34 @@
 import 'package:flutter/material.dart';
+import '../db/database_helper.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _userController = TextEditingController();
+  final TextEditingController _passController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  String _error = '';
+
+  Future<void> _login() async {
+    final db = DatabaseHelper();
+    final usuario = await db.validarUsuario(_userController.text, _passController.text);
+
+    if (usuario != null) {
+      final rol = usuario['rol'];
+      if (rol == 'administrador') {
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        Navigator.pushReplacementNamed(context, '/usuario');
+      }
+    } else {
+      setState(() => _error = 'Credenciales incorrectas');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,76 +51,63 @@ class LoginScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Bienvenida 💖',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.pink[300],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Inicia sesión para acceder al panel',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.teal[300],
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Usuario',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Bienvenida 💖', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.pink[300])),
+                  const SizedBox(height: 8),
+                  Text('Inicia sesión para acceder al panel', textAlign: TextAlign.center, style: TextStyle(color: Colors.teal[300], fontSize: 16)),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _userController,
+                    decoration: InputDecoration(
+                      labelText: 'Usuario',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      fillColor: Colors.teal[50],
+                      filled: true,
                     ),
-                    fillColor: Colors.teal[50],
-                    filled: true,
+                    validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      fillColor: Colors.teal[50],
+                      filled: true,
                     ),
-                    fillColor: Colors.teal[50],
-                    filled: true,
+                    validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
                   ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Aquí luego agregas la lógica de validación
-                      Navigator.pushReplacementNamed(context, '/admin');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[200],
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  if (_error.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(_error, style: const TextStyle(color: Colors.red)),
+                    ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _login();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink[200],
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                    ),
-                    child: const Text(
-                      'Iniciar Sesión',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
+                      child: const Text('Iniciar Sesión', style: TextStyle(fontSize: 16, color: Colors.white)),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
