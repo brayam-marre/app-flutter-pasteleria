@@ -3,6 +3,10 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../db/database_helper.dart';
 
+import '../screens/compras_screen.dart';
+import '../screens/calculos_screen.dart';
+import '../screens/productos_screen.dart';
+
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
 
@@ -14,21 +18,21 @@ class _InicioScreenState extends State<InicioScreen> {
   int cantidadProductos = 0;
   int cantidadCompras = 0;
   int cantidadRecetas = 0;
+  int? idUsuario;
 
   @override
   void initState() {
     super.initState();
+    final usuario = Provider.of<AuthProvider>(context, listen: false).usuarioActual;
+    idUsuario = usuario?['id'];
     _cargarEstadisticas();
   }
 
   Future<void> _cargarEstadisticas() async {
-    final usuario = Provider.of<AuthProvider>(context, listen: false).usuarioActual;
-    final idUsuario = usuario?['id'];
     if (idUsuario == null) return;
-
-    final productos = await DatabaseHelper().obtenerProductos(idUsuario);
-    final compras = await DatabaseHelper().obtenerCompras(idUsuario);
-    final recetas = await DatabaseHelper().obtenerRecetas(idUsuario);
+    final productos = await DatabaseHelper().obtenerProductos(idUsuario!);
+    final compras = await DatabaseHelper().obtenerCompras(idUsuario!);
+    final recetas = await DatabaseHelper().obtenerRecetas(idUsuario!);
 
     setState(() {
       cantidadProductos = productos.length;
@@ -50,13 +54,8 @@ class _InicioScreenState extends State<InicioScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🖼️ Logo
-            Center(
-              child: Image.asset('assets/logo_pasteleria.png', height: 120),
-            ),
+            Center(child: Image.asset('assets/logo_pasteleria.png', height: 120)),
             const SizedBox(height: 20),
-
-            // 👋 Bienvenida
             Center(
               child: Text(
                 'Bienvenida $nombre ❤️',
@@ -65,18 +64,16 @@ class _InicioScreenState extends State<InicioScreen> {
             ),
             const SizedBox(height: 16),
 
-            // 📊 Estadísticas dinámicas
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatCard('Productos', '$cantidadProductos', context),
-                _buildStatCard('Compras', '$cantidadCompras', context),
-                _buildStatCard('Recetas', '$cantidadRecetas', context),
+                _buildStatCard('Productos', '$cantidadProductos', Icons.inventory_2, Colors.pink),
+                _buildStatCard('Compras', '$cantidadCompras', Icons.shopping_cart, Colors.teal),
+                _buildStatCard('Recetas', '$cantidadRecetas', Icons.receipt_long, Colors.deepPurple),
               ],
             ),
             const SizedBox(height: 24),
 
-            // ⚡ Accesos rápidos
             const Text('Accesos rápidos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             GridView.count(
@@ -85,18 +82,33 @@ class _InicioScreenState extends State<InicioScreen> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 1.2,
+              childAspectRatio: 1.5,
               children: [
-                _buildHomeCard(Icons.shopping_cart, 'Registrar Compra', () {
-                  Navigator.pushNamed(context, '/compras');
+                _buildAnimatedHomeCard(Icons.shopping_cart, 'Registrar Compra', () {
+                  if (idUsuario != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ComprasScreen(idUsuario: idUsuario!)),
+                    );
+                  }
                 }),
-                _buildHomeCard(Icons.calculate, 'Cálculos', () {
-                  Navigator.pushNamed(context, '/calculos');
+                _buildAnimatedHomeCard(Icons.calculate, 'Cálculos', () {
+                  if (idUsuario != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => CalculosScreen(idUsuario: idUsuario!)),
+                    );
+                  }
                 }),
-                _buildHomeCard(Icons.inventory, 'Productos', () {
-                  Navigator.pushNamed(context, '/productos');
+                _buildAnimatedHomeCard(Icons.inventory, 'Productos', () {
+                  if (idUsuario != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ProductosScreen(idUsuario: idUsuario!)),
+                    );
+                  }
                 }),
-                _buildHomeCard(Icons.settings, 'Ajustes', () {
+                _buildAnimatedHomeCard(Icons.settings, 'Ajustes', () {
                   Navigator.pushNamed(context, '/ajustes');
                 }),
               ],
@@ -107,34 +119,54 @@ class _InicioScreenState extends State<InicioScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-        Text(title),
-      ],
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(12),
+      width: 100,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 30, color: color),
+          const SizedBox(height: 6),
+          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+          Text(title, style: const TextStyle(fontSize: 13)),
+        ],
+      ),
     );
   }
 
-  Widget _buildHomeCard(IconData icon, String label, VoidCallback onTap) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 32, color: Colors.pink),
-              const SizedBox(height: 6),
-              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
-            ],
+  Widget _buildAnimatedHomeCard(IconData icon, String label, VoidCallback onTap) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.0, end: 1.0),
+      duration: const Duration(milliseconds: 200),
+      builder: (context, scale, child) {
+        return GestureDetector(
+          onTap: onTap,
+          child: AnimatedScale(
+            scale: 1.0,
+            duration: const Duration(milliseconds: 150),
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 26, color: Colors.pink),
+                    const SizedBox(height: 4),
+                    Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

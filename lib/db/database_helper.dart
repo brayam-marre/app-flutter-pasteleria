@@ -95,8 +95,8 @@ class DatabaseHelper {
     ''');
 
     await db.insert('usuarios', {
-      'username': 'admin',
-      'password': 'admin123',
+      'username': 'josy',
+      'password': 'josy',
       'rol': 'administrador',
       'activo': 1,
       'ultimo_login': null
