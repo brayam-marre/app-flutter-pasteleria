@@ -1,9 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../db/database_helper.dart';
 
-class InicioScreen extends StatelessWidget {
+class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
+
+  @override
+  State<InicioScreen> createState() => _InicioScreenState();
+}
+
+class _InicioScreenState extends State<InicioScreen> {
+  int cantidadProductos = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarEstadisticas();
+  }
+
+  Future<void> _cargarEstadisticas() async {
+    final usuario = Provider.of<AuthProvider>(context, listen: false).usuarioActual;
+    final idUsuario = usuario?['id'];
+    if (idUsuario == null) return;
+
+    final productos = await DatabaseHelper().obtenerProductos(idUsuario);
+    setState(() {
+      cantidadProductos = productos.length;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,52 +43,39 @@ class InicioScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🖼️ Logo (opcional)
             Center(
-              child: Image.asset(
-                'assets/logo_pasteleria.png',
-                height: 120,
-              ),
+              child: Image.asset('assets/logo_pasteleria.png', height: 120),
             ),
             const SizedBox(height: 20),
-
-            // 👋 Bienvenida centrada y personalizada
             Center(
               child: Text(
                 'Bienvenida $nombre ❤️',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 16),
 
-            // 📊 Estadísticas rápidas
+            // 📊 Estadísticas dinámicas
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatCard('Productos', '42', context),
-                _buildStatCard('Compras', '15', context),
-                _buildStatCard('Recetas', '8', context),
+                _buildStatCard('Productos', '$cantidadProductos', context),
+                _buildStatCard('Compras', '-', context), // lo puedes hacer igual con compras luego
+                _buildStatCard('Recetas', '-', context),
               ],
             ),
             const SizedBox(height: 24),
 
-            // ⚡ Accesos rápidos
-            const Text(
-              'Accesos rápidos',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('Accesos rápidos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
+
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 1.2, // más compacto
+              childAspectRatio: 1.2,
               children: [
                 _buildHomeCard(Icons.shopping_cart, 'Registrar Compra', () {
                   Navigator.pushNamed(context, '/compras');
@@ -89,14 +101,7 @@ class InicioScreen extends StatelessWidget {
     final color = Theme.of(context).colorScheme.primary;
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
+        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
         Text(title),
       ],
     );
@@ -115,11 +120,7 @@ class InicioScreen extends StatelessWidget {
             children: [
               Icon(icon, size: 32, color: Colors.pink),
               const SizedBox(height: 6),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13),
-              ),
+              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
             ],
           ),
         ),
