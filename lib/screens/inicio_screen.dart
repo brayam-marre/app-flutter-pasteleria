@@ -12,6 +12,8 @@ class InicioScreen extends StatefulWidget {
 
 class _InicioScreenState extends State<InicioScreen> {
   int cantidadProductos = 0;
+  int cantidadCompras = 0;
+  int cantidadRecetas = 0;
 
   @override
   void initState() {
@@ -25,8 +27,13 @@ class _InicioScreenState extends State<InicioScreen> {
     if (idUsuario == null) return;
 
     final productos = await DatabaseHelper().obtenerProductos(idUsuario);
+    final compras = await DatabaseHelper().obtenerCompras(idUsuario);
+    final recetas = await DatabaseHelper().obtenerRecetas(idUsuario);
+
     setState(() {
       cantidadProductos = productos.length;
+      cantidadCompras = compras.length;
+      cantidadRecetas = recetas.length;
     });
   }
 
@@ -43,10 +50,13 @@ class _InicioScreenState extends State<InicioScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🖼️ Logo
             Center(
               child: Image.asset('assets/logo_pasteleria.png', height: 120),
             ),
             const SizedBox(height: 20),
+
+            // 👋 Bienvenida
             Center(
               child: Text(
                 'Bienvenida $nombre ❤️',
@@ -60,15 +70,15 @@ class _InicioScreenState extends State<InicioScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStatCard('Productos', '$cantidadProductos', context),
-                _buildStatCard('Compras', '-', context), // lo puedes hacer igual con compras luego
-                _buildStatCard('Recetas', '-', context),
+                _buildStatCard('Compras', '$cantidadCompras', context),
+                _buildStatCard('Recetas', '$cantidadRecetas', context),
               ],
             ),
             const SizedBox(height: 24),
 
+            // ⚡ Accesos rápidos
             const Text('Accesos rápidos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
