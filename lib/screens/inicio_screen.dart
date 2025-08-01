@@ -8,7 +8,8 @@ class InicioScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final usuario = Provider.of<AuthProvider>(context).usuarioActual;
-    final nombre = usuario?['nombre'] ?? 'Usuario';
+    final rawNombre = usuario?['username'] ?? 'usuario';
+    final nombre = rawNombre[0].toUpperCase() + rawNombre.substring(1);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Inicio')),
@@ -20,16 +21,22 @@ class InicioScreen extends StatelessWidget {
             // 🖼️ Logo (opcional)
             Center(
               child: Image.asset(
-                'assets/logo_pasteleria.png', // Asegúrate de tener esta imagen en assets
+                'assets/logo_pasteleria.png',
                 height: 120,
               ),
             ),
             const SizedBox(height: 20),
 
-            // 👋 Bienvenida
-            Text(
-              '¡Bienvenido, $nombre!',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            // 👋 Bienvenida centrada y personalizada
+            Center(
+              child: Text(
+                'Bienvenida $nombre ❤️',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -54,8 +61,9 @@ class InicioScreen extends StatelessWidget {
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.2, // más compacto
               children: [
                 _buildHomeCard(Icons.shopping_cart, 'Registrar Compra', () {
                   Navigator.pushNamed(context, '/compras');
@@ -81,7 +89,14 @@ class InicioScreen extends StatelessWidget {
     final color = Theme.of(context).colorScheme.primary;
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         Text(title),
       ],
     );
@@ -98,9 +113,13 @@ class InicioScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 40, color: Colors.pink),
-              const SizedBox(height: 8),
-              Text(label, textAlign: TextAlign.center),
+              Icon(icon, size: 32, color: Colors.pink),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13),
+              ),
             ],
           ),
         ),
