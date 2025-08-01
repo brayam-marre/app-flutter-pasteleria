@@ -106,6 +106,7 @@ class DatabaseHelper {
       'username': 'usuario',
       'password': 'usuario123',
       'rol': 'usuario',
+
       'activo': 1,
       'ultimo_login': null
     });

@@ -9,28 +9,58 @@ enum AppTheme {
 
 final Map<AppTheme, ThemeData> appThemeData = {
   AppTheme.rosado: ThemeData(
+    useMaterial3: true,
+    fontFamily: 'Roboto',
     colorScheme: ColorScheme.fromSeed(
       seedColor: const Color(0xFFFFB6C1), // Rosado más fuerte
       primary: const Color(0xFFFFB6C1),
       secondary: Colors.pinkAccent[100]!,
     ),
-    useMaterial3: true,
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        fontFamily: 'Roboto',
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+        color: Colors.black,
+      ),
+    ),
   ),
   AppTheme.calipso: ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.teal[200]!,
-      primary: Colors.cyan[100]!,
-      secondary: Colors.teal[100]!,
-    ),
     useMaterial3: true,
+    fontFamily: 'Roboto',
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.tealAccent,
+      primary: Colors.cyanAccent,
+      secondary: Colors.tealAccent,
+    ),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        fontFamily: 'Roboto',
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+        color: Colors.black,
+      ),
+    ),
   ),
   AppTheme.lavanda: ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFFE6E6FA),
-      primary: const Color(0xFFE6E6FA),
-      secondary: Colors.deepPurple[100]!,
-    ),
     useMaterial3: true,
+    fontFamily: 'Roboto',
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Color(0xFFE6E6FA),
+      primary: Color(0xFFE6E6FA),
+      secondary: Colors.deepPurpleAccent,
+    ),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        fontFamily: 'Roboto',
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+        color: Colors.black,
+      ),
+    ),
   ),
 };
 
