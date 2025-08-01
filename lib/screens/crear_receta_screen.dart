@@ -5,11 +5,12 @@ import 'package:provider/provider.dart';
 import '../models/producto.dart';
 import '../models/receta.dart';
 import '../models/receta_producto.dart';
-import '../db/database_helper.dart';
+import '../services/receta_service.dart';
+import '../services/producto_service.dart';
 import '../providers/unidad_provider.dart';
 
 class CrearRecetaScreen extends StatefulWidget {
-  final int idUsuario; // ✅ Se agregó el campo requerido
+  final int idUsuario;
 
   const CrearRecetaScreen({super.key, required this.idUsuario});
 
@@ -37,13 +38,13 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
   }
 
   Future<void> cargarInventario() async {
-    final data = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Filtrar por usuario
+    final data = await ProductoService.obtenerProductos(widget.idUsuario);
     setState(() {
       inventario = data;
     });
   }
 
-  void guardarReceta() async {
+  Future<void> guardarReceta() async {
     final nombre = nombreController.text.trim();
     final porciones = int.tryParse(porcionesController.text) ?? 1;
     final ganancia = double.tryParse(gananciaController.text) ?? 0;
@@ -54,20 +55,16 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
       nombre: nombre,
       porciones: porciones,
       porcentajeGanancia: ganancia,
-      idUsuario: widget.idUsuario, // ✅ Asociar receta al usuario
+      idUsuario: widget.idUsuario,
     );
 
-    final recetaId = await DatabaseHelper().insertarReceta(receta, widget.idUsuario);
-
-    for (final p in productos) {
-      await DatabaseHelper().insertarProductoDeReceta(p.copyWith(idReceta: recetaId));
+    final recetaId = await RecetaService.insertarReceta(receta, productos);
+    if (recetaId > 0) {
+      Navigator.pop(context, true);
     }
-
-    Navigator.pop(context, true);
   }
 
-
-@override
+  @override
   Widget build(BuildContext context) {
     double total = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
     double ganancia = double.tryParse(gananciaController.text) ?? 0;
@@ -102,8 +99,7 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
             const Text('Agregar Producto', style: TextStyle(fontWeight: FontWeight.bold)),
             Autocomplete<Producto>(
               optionsBuilder: (TextEditingValue textEditingValue) {
-                return inventario.where((p) =>
-                    p.nombre.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                return inventario.where((p) => p.nombre.toLowerCase().contains(textEditingValue.text.toLowerCase()));
               },
               displayStringForOption: (p) => p.nombre,
               onSelected: (producto) {
@@ -196,8 +192,7 @@ class _CrearRecetaScreenState extends State<CrearRecetaScreen> {
             const Divider(),
             ...productos.map((p) => ListTile(
               title: Text(p.nombreProducto),
-              subtitle: Text(
-                  '${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
+              subtitle: Text('${p.cantidadUsada} ${p.unidad} - \$${(p.cantidadUsada * p.costoUnitario).round()}'),
               trailing: IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () => setState(() => productos.remove(p)),

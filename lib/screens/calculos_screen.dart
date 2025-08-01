@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/receta.dart';
 import '../models/receta_producto.dart';
-import '../models/producto.dart';
-import '../db/database_helper.dart';
+import '../services/receta_service.dart';
 import 'crear_receta_screen.dart';
 import 'modificar_receta_screen.dart';
 
 class CalculosScreen extends StatefulWidget {
-  final int idUsuario; // ✅ Añadido para filtrar por usuario
+  final int idUsuario;
 
   const CalculosScreen({super.key, required this.idUsuario});
 
@@ -17,7 +16,6 @@ class CalculosScreen extends StatefulWidget {
 
 class _CalculosScreenState extends State<CalculosScreen> {
   List<Receta> recetas = [];
-  List<Producto> inventario = [];
 
   @override
   void initState() {
@@ -26,16 +24,14 @@ class _CalculosScreenState extends State<CalculosScreen> {
   }
 
   Future<void> _cargarDatos() async {
-    final data = await DatabaseHelper().obtenerRecetas(widget.idUsuario); // ✅ Filtra por usuario
-    final productos = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Filtra por usuario
+    final data = await RecetaService.obtenerRecetas(widget.idUsuario);
     setState(() {
       recetas = data;
-      inventario = productos;
     });
   }
 
   Future<void> _mostrarDetalleReceta(Receta receta) async {
-    final productos = await DatabaseHelper().obtenerProductosDeReceta(receta.id!);
+    final productos = await RecetaService.obtenerProductosDeReceta(receta.id!);
     final costoTotal = productos.fold(0.0, (sum, p) => sum + (p.cantidadUsada * p.costoUnitario));
     final costoPorPorcion = receta.porciones > 0 ? costoTotal / receta.porciones : 0.0;
 
@@ -86,7 +82,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
           actions: [
             TextButton(
               onPressed: () async {
-                await DatabaseHelper().eliminarReceta(receta.id!);
+                await RecetaService.eliminarReceta(receta.id!);
                 Navigator.pop(context);
                 _cargarDatos();
               },
@@ -100,7 +96,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
                   MaterialPageRoute(
                     builder: (_) => ModificarRecetaScreen(
                       recetaId: receta.id!,
-                      idUsuario: widget.idUsuario, // ✅ Pasa el idUsuario también si es necesario
+                      idUsuario: widget.idUsuario,
                     ),
                   ),
                 );
@@ -124,7 +120,7 @@ class _CalculosScreenState extends State<CalculosScreen> {
     final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CrearRecetaScreen(idUsuario: widget.idUsuario), // ✅ Pasa el idUsuario
+        builder: (_) => CrearRecetaScreen(idUsuario: widget.idUsuario),
       ),
     );
     if (resultado == true) {

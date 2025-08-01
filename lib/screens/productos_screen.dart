@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/producto.dart';
-import '../services/producto_service.dart'; // Nuevo servicio HTTP
+import '../services/producto_service.dart';
 import '../providers/unidad_provider.dart';
 
 class ProductosScreen extends StatefulWidget {
@@ -23,8 +23,15 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   Future<void> _cargarProductos() async {
-    final data = await ProductoService().obtenerProductos(widget.idUsuario);
-    setState(() => productos = data);
+    try {
+      final data = await ProductoService.obtenerProductos(widget.idUsuario);
+      setState(() => productos = data);
+    } catch (e) {
+      // Mostrar error si la carga falla
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al cargar productos')),
+      );
+    }
   }
 
   void _mostrarFormularioProducto({Producto? producto}) {
@@ -46,12 +53,17 @@ class _ProductosScreenState extends State<ProductosScreen> {
           ),
           child: Consumer<UnidadProvider>(
             builder: (context, unidadProvider, _) {
+              final unidades = unidadProvider.unidades;
+
               return SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(producto == null ? 'Nuevo Producto' : 'Editar Producto',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      producto == null ? 'Nuevo Producto' : 'Editar Producto',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: nombreController,
                       decoration: const InputDecoration(labelText: 'Nombre'),
@@ -59,7 +71,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
                     TextField(
                       controller: pesoController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Peso'),
+                      decoration: const InputDecoration(labelText: 'Cantidad'),
                     ),
                     TextField(
                       controller: valorController,
@@ -67,12 +79,10 @@ class _ProductosScreenState extends State<ProductosScreen> {
                       decoration: const InputDecoration(labelText: 'Valor (CLP)'),
                     ),
                     DropdownButtonFormField<String>(
-                      value: unidadProvider.unidades.any((u) => u.nombre == unidadController.text)
+                      value: unidades.any((u) => u.nombre == unidadController.text)
                           ? unidadController.text
-                          : unidadProvider.unidades.isNotEmpty
-                          ? unidadProvider.unidades.first.nombre
-                          : null,
-                      items: unidadProvider.unidades.map((u) {
+                          : (unidades.isNotEmpty ? unidades.first.nombre : null),
+                      items: unidades.map((u) {
                         return DropdownMenuItem(
                           value: u.nombre,
                           child: Text(u.nombre),
@@ -103,9 +113,9 @@ class _ProductosScreenState extends State<ProductosScreen> {
                         );
 
                         if (producto == null) {
-                          await ProductoService().insertarProducto(nuevoProducto);
+                          await ProductoService.insertarProducto(nuevoProducto);
                         } else {
-                          await ProductoService().actualizarProducto(nuevoProducto);
+                          await ProductoService.actualizarProducto(nuevoProducto);
                         }
 
                         if (context.mounted) Navigator.pop(context);
@@ -123,7 +133,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   Future<void> _eliminarProducto(int id) async {
-    await ProductoService().eliminarProducto(id);
+    await ProductoService.eliminarProducto(id);
     _cargarProductos();
   }
 
@@ -135,7 +145,9 @@ class _ProductosScreenState extends State<ProductosScreen> {
         onPressed: () => _mostrarFormularioProducto(),
         child: const Icon(Icons.add),
       ),
-      body: ListView.builder(
+      body: productos.isEmpty
+          ? const Center(child: Text('No hay productos registrados.'))
+          : ListView.builder(
         itemCount: productos.length,
         itemBuilder: (context, index) {
           final p = productos[index];

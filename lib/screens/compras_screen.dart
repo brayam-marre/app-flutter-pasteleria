@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/compra.dart';
 import '../models/compra_producto.dart';
-import '../db/database_helper.dart';
+import '../services/compra_service.dart'; // ✅ Servicio API REST
 import '../providers/unidad_provider.dart';
-import '../providers/auth_provider.dart'; // ✅ Importar AuthProvider
 
 class ComprasScreen extends StatefulWidget {
-  final int idUsuario; // ✅ Recibir idUsuario
+  final int idUsuario;
 
   const ComprasScreen({super.key, required this.idUsuario});
 
@@ -25,12 +24,12 @@ class _ComprasScreenState extends State<ComprasScreen> {
   }
 
   Future<void> _cargarCompras() async {
-    final data = await DatabaseHelper().obtenerCompras(widget.idUsuario); // ✅ Filtrar por usuario
+    final data = await CompraService.obtenerCompras(widget.idUsuario);
     setState(() => compras = data);
   }
 
   void _mostrarDetalleCompra(Compra compra) async {
-    final productos = await DatabaseHelper().obtenerProductosDeCompra(compra.id!);
+    final productos = await CompraService.obtenerProductosDeCompra(compra.id!);
 
     showModalBottomSheet(
       context: context,
@@ -160,15 +159,10 @@ class _ComprasScreenState extends State<ComprasScreen> {
                           nombre: nombre,
                           fecha: DateTime.now().toIso8601String(),
                           total: total,
-                          idUsuario: widget.idUsuario, // ✅ Asignar al usuario
+                          idUsuario: widget.idUsuario,
                         );
-                        final compraId = await DatabaseHelper().insertarCompra(compra);
 
-                        for (final p in productos) {
-                          await DatabaseHelper().insertarProductoDeCompra(
-                            p.copyWith(idCompra: compraId),
-                          );
-                        }
+                        final compraId = await CompraService.insertarCompra(compra, productos);
 
                         Navigator.pop(context);
                         _cargarCompras();
@@ -188,7 +182,6 @@ class _ComprasScreenState extends State<ComprasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Compras')),
       floatingActionButton: FloatingActionButton(

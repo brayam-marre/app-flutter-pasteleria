@@ -28,12 +28,12 @@ class RecetaProducto {
 
   factory RecetaProducto.fromMap(Map<String, dynamic> map) {
     return RecetaProducto(
-      id: map['id'],
-      idReceta: map['idReceta'],
-      nombreProducto: map['nombreProducto'],
-      unidad: map['unidad'],
-      cantidadUsada: map['cantidadUsada'],
-      costoUnitario: map['costoUnitario'],
+      id: map['id'] != null ? int.tryParse(map['id'].toString()) : null,
+      idReceta: int.tryParse(map['idReceta'].toString()) ?? 0,
+      nombreProducto: map['nombreProducto']?.toString() ?? '',
+      unidad: map['unidad']?.toString() ?? '',
+      cantidadUsada: double.tryParse(map['cantidadUsada'].toString()) ?? 0.0,
+      costoUnitario: double.tryParse(map['costoUnitario'].toString()) ?? 0.0,
     );
   }
 

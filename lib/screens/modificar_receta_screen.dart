@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import '../models/receta.dart';
 import '../models/receta_producto.dart';
 import '../models/producto.dart';
-import '../db/database_helper.dart';
 import '../providers/unidad_provider.dart';
+import '../services/receta_service.dart';
+import '../services/producto_service.dart';
 
 class ModificarRecetaScreen extends StatefulWidget {
   final int recetaId;
-  final int idUsuario; // 🆕 Identificador del usuario
+  final int idUsuario;
 
   const ModificarRecetaScreen({
     super.key,
@@ -41,9 +42,9 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
   }
 
   Future<void> _cargarDatos() async {
-    final receta = await DatabaseHelper().obtenerRecetaPorId(widget.recetaId);
-    final productosReceta = await DatabaseHelper().obtenerProductosDeReceta(widget.recetaId);
-    final inventarioData = await DatabaseHelper().obtenerProductos(widget.idUsuario); // ✅ Corregido
+    final receta = await RecetaService.obtenerRecetaPorId(widget.recetaId);
+    final productosReceta = await RecetaService.obtenerProductosDeReceta(widget.recetaId);
+    final inventarioData = await ProductoService.obtenerProductos(widget.idUsuario);
 
     setState(() {
       recetaOriginal = receta;
@@ -71,13 +72,8 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
       idUsuario: widget.idUsuario,
     );
 
-    await DatabaseHelper().actualizarReceta(recetaModificada);
-    await DatabaseHelper().eliminarProductosDeReceta(recetaModificada.id!);
-    for (final p in productos) {
-      await DatabaseHelper().insertarProductoDeReceta(p.copyWith(idReceta: recetaModificada.id));
-    }
-
-    Navigator.pop(context, true);
+    final exito = await RecetaService.actualizarRecetaCompleta(recetaModificada, productos);
+    if (exito && mounted) Navigator.pop(context, true);
   }
 
   @override
@@ -137,9 +133,12 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
             ),
             Consumer<UnidadProvider>(
               builder: (context, unidadProvider, _) {
+                final unidades = unidadProvider.unidades;
                 return DropdownButtonFormField<String>(
-                  value: unidadController.text.isNotEmpty ? unidadController.text : null,
-                  items: unidadProvider.unidades.map((u) {
+                  value: unidades.any((u) => u.nombre == unidadController.text)
+                      ? unidadController.text
+                      : (unidades.isNotEmpty ? unidades.first.nombre : null),
+                  items: unidades.map((u) {
                     return DropdownMenuItem<String>(
                       value: u.nombre,
                       child: Text(u.nombre),
@@ -203,7 +202,7 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
               icon: const Icon(Icons.add),
               label: const Text('Agregar producto'),
             ),
-            const SizedBox(height: 10),
+            const Divider(),
             ...productos.map((p) => ListTile(
               title: Text(p.nombreProducto),
               subtitle: Text(
@@ -213,7 +212,7 @@ class _ModificarRecetaScreenState extends State<ModificarRecetaScreen> {
                 onPressed: () => setState(() => productos.remove(p)),
               ),
             )),
-            const Divider(),
+            const SizedBox(height: 10),
             Text('Total costo: \$${total.round()}'),
             Text('Con ganancia: \$${totalConGanancia.round()}'),
             Text('Con IVA (19%): \$${conIVA.round()}'),

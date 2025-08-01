@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-//import '../db/database_helper.dart';
 import '../services/usuario_service.dart';
 import '../providers/auth_provider.dart';
 
@@ -19,19 +18,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     final usuarioService = UsuarioService();
-    final usuario = await usuarioService.login(
-      _userController.text,
-      _passController.text,
-    );
+    final username = _userController.text.trim();
+    final password = _passController.text.trim();
 
-    if (usuario != null) {
-      Provider.of<AuthProvider>(context, listen: false).login(usuario);
-      Navigator.pushReplacementNamed(context, '/admin');
-    } else {
-      setState(() => _error = 'Credenciales incorrectas');
+    print('[LOGIN] Intentando iniciar sesión con:');
+    print('Usuario: $username');
+    print('Contraseña: $password');
+
+    try {
+      final usuario = await usuarioService.login(username, password);
+
+      if (usuario != null) {
+        print('[LOGIN] Sesión iniciada con éxito');
+        print('Usuario recibido: $usuario');
+
+        Provider.of<AuthProvider>(context, listen: false).login(usuario);
+        Navigator.pushReplacementNamed(context, '/admin');
+      } else {
+        print('[LOGIN] Error: Credenciales inválidas o respuesta vacía');
+        setState(() => _error = 'Credenciales incorrectas');
+      }
+    } catch (e) {
+      print('[LOGIN] Error durante la petición: $e');
+      setState(() => _error = 'Error al conectar con el servidor');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

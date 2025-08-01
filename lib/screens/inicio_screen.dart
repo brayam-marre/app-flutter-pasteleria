@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/auth_provider.dart';
-import '../db/database_helper.dart';
 
 import '../screens/compras_screen.dart';
 import '../screens/calculos_screen.dart';
 import '../screens/productos_screen.dart';
+
+// NUEVOS SERVICIOS
+import '../services/producto_service.dart';
+import '../services/compra_service.dart';
+import '../services/receta_service.dart';
 
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
@@ -30,15 +35,20 @@ class _InicioScreenState extends State<InicioScreen> {
 
   Future<void> _cargarEstadisticas() async {
     if (idUsuario == null) return;
-    final productos = await DatabaseHelper().obtenerProductos(idUsuario!);
-    final compras = await DatabaseHelper().obtenerCompras(idUsuario!);
-    final recetas = await DatabaseHelper().obtenerRecetas(idUsuario!);
 
-    setState(() {
-      cantidadProductos = productos.length;
-      cantidadCompras = compras.length;
-      cantidadRecetas = recetas.length;
-    });
+    try {
+      final productos = await ProductoService.obtenerProductos(idUsuario!);
+      final compras = await CompraService.obtenerCompras(idUsuario!);
+      final recetas = await RecetaService.obtenerRecetas(idUsuario!);
+
+      setState(() {
+        cantidadProductos = productos.length;
+        cantidadCompras = compras.length;
+        cantidadRecetas = recetas.length;
+      });
+    } catch (e) {
+      print('Error al cargar estadísticas: $e');
+    }
   }
 
   @override

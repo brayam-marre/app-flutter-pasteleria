@@ -25,11 +25,13 @@ class Receta {
 
   factory Receta.fromMap(Map<String, dynamic> map) {
     return Receta(
-      id: map['id'],
-      nombre: map['nombre'],
-      porciones: map['porciones'],
-      porcentajeGanancia: map['porcentajeGanancia']?.toDouble() ?? 0.0,
-      idUsuario: map['idUsuario'], // 🔹 Lo recuperamos
+      id: int.tryParse(map['id'].toString()),
+      // Convierte a int aunque venga como String
+      nombre: map['nombre'] ?? '',
+      porciones: int.tryParse(map['porciones'].toString()) ?? 1,
+      porcentajeGanancia: double.tryParse(
+          map['porcentajeGanancia'].toString()) ?? 0.0,
+      idUsuario: int.tryParse(map['idUsuario'].toString()),
     );
   }
 }

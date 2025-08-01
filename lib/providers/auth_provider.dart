@@ -1,5 +1,3 @@
-// lib/providers/auth_provider.dart
-
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -7,7 +5,7 @@ class AuthProvider with ChangeNotifier {
 
   Map<String, dynamic>? get usuarioActual => _usuarioActual;
 
-  /// Método para establecer el usuario después del login
+  /// Establecer usuario tras login
   void login(Map<String, dynamic> usuario) {
     _usuarioActual = usuario;
     notifyListeners();
@@ -19,6 +17,16 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Verificar si hay sesión activa
+  /// Verifica si hay sesión activa
   bool get estaAutenticado => _usuarioActual != null;
+
+  /// Obtener el rol actual
+  String get rol => _usuarioActual?['rol'] ?? 'usuario';
+
+  /// Obtener ID del usuario actual (útil para filtrar contenido por usuario)
+  int? get idUsuario {
+    final id = _usuarioActual?['id'];
+    if (id == null) return null;
+    return int.tryParse(id.toString());
+  }
 }

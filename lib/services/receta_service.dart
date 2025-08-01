@@ -8,7 +8,8 @@ import '../models/receta_producto.dart';
 class RecetaService {
   static const String baseUrl = 'https://dtentacion.es/api/recetas.php';
 
-  Future<List<Receta>> obtenerRecetas(int idUsuario) async {
+  /// Obtiene todas las recetas de un usuario
+  static Future<List<Receta>> obtenerRecetas(int idUsuario) async {
     final response = await http.get(Uri.parse('$baseUrl?idUsuario=$idUsuario'));
 
     if (response.statusCode == 200) {
@@ -19,7 +20,8 @@ class RecetaService {
     }
   }
 
-  Future<Receta> obtenerRecetaPorId(int recetaId) async {
+  /// Obtiene una receta específica por su ID
+  static Future<Receta> obtenerRecetaPorId(int recetaId) async {
     final response = await http.get(Uri.parse('$baseUrl?recetaId=$recetaId'));
 
     if (response.statusCode == 200) {
@@ -29,7 +31,8 @@ class RecetaService {
     }
   }
 
-  Future<List<RecetaProducto>> obtenerProductosDeReceta(int recetaId) async {
+  /// Obtiene los productos asociados a una receta
+  static Future<List<RecetaProducto>> obtenerProductosDeReceta(int recetaId) async {
     final response = await http.get(Uri.parse('$baseUrl?productosReceta=$recetaId'));
 
     if (response.statusCode == 200) {
@@ -40,7 +43,8 @@ class RecetaService {
     }
   }
 
-  Future<int> insertarReceta(Receta receta, List<RecetaProducto> productos) async {
+  /// Inserta una nueva receta con sus productos asociados
+  static Future<int> insertarReceta(Receta receta, List<RecetaProducto> productos) async {
     final response = await http.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
@@ -58,7 +62,8 @@ class RecetaService {
     }
   }
 
-  Future<bool> actualizarReceta(Receta receta, List<RecetaProducto> productos) async {
+  /// Actualiza completamente una receta y reemplaza sus productos
+  static Future<bool> actualizarRecetaCompleta(Receta receta, List<RecetaProducto> productos) async {
     final response = await http.put(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
@@ -70,7 +75,8 @@ class RecetaService {
     return response.statusCode == 200;
   }
 
-  Future<bool> eliminarReceta(int recetaId) async {
+  /// Elimina una receta y sus productos asociados
+  static Future<bool> eliminarReceta(int recetaId) async {
     final response = await http.delete(Uri.parse('$baseUrl?id=$recetaId'));
     return response.statusCode == 200;
   }

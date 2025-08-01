@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
+import '../services/usuario_service.dart';
 
 class UsuariosScreen extends StatefulWidget {
   const UsuariosScreen({super.key});
@@ -10,7 +10,7 @@ class UsuariosScreen extends StatefulWidget {
 
 class _UsuariosScreenState extends State<UsuariosScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final UsuarioService _usuarioService = UsuarioService();
   List<Map<String, dynamic>> _usuarios = [];
   List<Map<String, dynamic>> _usuariosFiltrados = [];
 
@@ -22,11 +22,15 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   }
 
   Future<void> _cargarUsuarios() async {
-    final usuarios = await _dbHelper.obtenerUsuarios();
-    setState(() {
-      _usuarios = usuarios;
-      _usuariosFiltrados = usuarios;
-    });
+    try {
+      final usuarios = await _usuarioService.obtenerUsuarios();
+      setState(() {
+        _usuarios = usuarios;
+        _usuariosFiltrados = usuarios;
+      });
+    } catch (e) {
+      print('Error cargando usuarios: $e');
+    }
   }
 
   void _filtrarUsuarios() {
@@ -41,8 +45,8 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   }
 
   void _mostrarFormulario({Map<String, dynamic>? usuario}) {
-    final TextEditingController _usernameController = TextEditingController(text: usuario?['username'] ?? '');
-    final TextEditingController _passwordController = TextEditingController();
+    final usernameController = TextEditingController(text: usuario?['username'] ?? '');
+    final passwordController = TextEditingController();
     String rol = usuario?['rol'] ?? 'usuario';
     bool activo = usuario?['activo'] == 1 || usuario == null;
 
@@ -54,24 +58,23 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: _usernameController,
+              controller: usernameController,
               decoration: const InputDecoration(labelText: 'Usuario'),
               enabled: usuario == null,
             ),
             TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Contraseña'),
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Contraseña (opcional)'),
               obscureText: true,
             ),
-            DropdownButton<String>(
+            DropdownButtonFormField<String>(
               value: rol,
-              onChanged: (value) {
-                setState(() => rol = value!);
-              },
+              onChanged: (value) => setState(() => rol = value!),
               items: const [
                 DropdownMenuItem(value: 'usuario', child: Text('Usuario')),
                 DropdownMenuItem(value: 'administrador', child: Text('Administrador')),
               ],
+              decoration: const InputDecoration(labelText: 'Rol'),
             ),
             Row(
               children: [
@@ -89,16 +92,21 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           TextButton(
             onPressed: () async {
               if (usuario == null) {
-                await _dbHelper.insertarUsuario(
-                  _usernameController.text.trim(),
-                  _passwordController.text.trim(),
+                // CREAR NUEVO USUARIO
+                await _usuarioService.crearUsuario(
+                  usernameController.text.trim(),
+                  passwordController.text.trim(),
                   rol,
+                  activo,
                 );
               } else {
-                if (_passwordController.text.isNotEmpty) {
-                  await _dbHelper.actualizarContrasena(usuario['id'], _passwordController.text.trim());
-                }
-                await _dbHelper.actualizarEstado(usuario['id'], activo);
+                // ACTUALIZAR
+                await _usuarioService.actualizarUsuario(
+                  id: usuario['id'],
+                  password: passwordController.text.trim().isNotEmpty ? passwordController.text.trim() : null,
+                  rol: rol,
+                  activo: activo,
+                );
               }
               Navigator.pop(context);
               _cargarUsuarios();
@@ -120,7 +128,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
           TextButton(
             onPressed: () async {
-              await _dbHelper.eliminarUsuario(id);
+              await _usuarioService.eliminarUsuario(id);
               Navigator.pop(context);
               _cargarUsuarios();
             },
@@ -136,7 +144,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       child: ListTile(
         leading: const Icon(Icons.person),
         title: Text(usuario['username']),
-        subtitle: Text("Rol: ${usuario['rol']} • Último acceso: ${usuario['ultimoLogin'] ?? 'N/A'}"),
+        subtitle: Text("Rol: ${usuario['rol']} • Último acceso: ${usuario['ultimo_login'] ?? 'N/A'}"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
