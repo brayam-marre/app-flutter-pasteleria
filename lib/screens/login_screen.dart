@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../db/database_helper.dart';
+//import '../db/database_helper.dart';
+import '../services/usuario_service.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,20 +18,20 @@ class _LoginScreenState extends State<LoginScreen> {
   String _error = '';
 
   Future<void> _login() async {
-    final db = DatabaseHelper();
-    final usuario = await db.validarUsuario(_userController.text, _passController.text);
+    final usuarioService = UsuarioService();
+    final usuario = await usuarioService.login(
+      _userController.text,
+      _passController.text,
+    );
 
     if (usuario != null) {
-      // Guardar usuario en el AuthProvider
       Provider.of<AuthProvider>(context, listen: false).login(usuario);
-
-      final rol = usuario['rol'];
       Navigator.pushReplacementNamed(context, '/admin');
-
     } else {
       setState(() => _error = 'Credenciales incorrectas');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

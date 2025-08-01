@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/producto.dart';
-import '../db/database_helper.dart';
+import '../services/producto_service.dart'; // Nuevo servicio HTTP
 import '../providers/unidad_provider.dart';
 
 class ProductosScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   Future<void> _cargarProductos() async {
-    final data = await DatabaseHelper().obtenerProductos(widget.idUsuario);
+    final data = await ProductoService().obtenerProductos(widget.idUsuario);
     setState(() => productos = data);
   }
 
@@ -93,30 +93,22 @@ class _ProductosScreenState extends State<ProductosScreen> {
 
                         if (nombre.isEmpty || unidad.isEmpty || peso <= 0 || valor <= 0) return;
 
+                        final nuevoProducto = Producto(
+                          id: producto?.id,
+                          nombre: nombre,
+                          unidad: unidad,
+                          cantidad: peso,
+                          valor: valor,
+                          idUsuario: widget.idUsuario,
+                        );
+
                         if (producto == null) {
-                          await DatabaseHelper().insertarProducto(
-                            Producto(
-                              nombre: nombre,
-                              unidad: unidad,
-                              cantidad: peso,
-                              valor: valor,
-                              idUsuario: widget.idUsuario,
-                            ),
-                          );
+                          await ProductoService().insertarProducto(nuevoProducto);
                         } else {
-                          await DatabaseHelper().actualizarProducto(
-                            Producto(
-                              id: producto.id,
-                              nombre: nombre,
-                              unidad: unidad,
-                              cantidad: peso,
-                              valor: valor,
-                              idUsuario: widget.idUsuario,
-                            ),
-                          );
+                          await ProductoService().actualizarProducto(nuevoProducto);
                         }
 
-                        Navigator.pop(context);
+                        if (context.mounted) Navigator.pop(context);
                         _cargarProductos();
                       },
                     ),
@@ -131,7 +123,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   }
 
   Future<void> _eliminarProducto(int id) async {
-    await DatabaseHelper().eliminarProducto(id);
+    await ProductoService().eliminarProducto(id);
     _cargarProductos();
   }
 

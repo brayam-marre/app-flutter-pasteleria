@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
+//import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import 'screens/login_screen.dart';
@@ -14,9 +14,6 @@ import 'providers/auth_provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ⚠️ SOLO EJECUTAR UNA VEZ
-  // await eliminarBaseDeDatos();
-
   runApp(
     MultiProvider(
       providers: [
@@ -27,12 +24,6 @@ Future<void> main() async {
       child: const PasteleriaApp(),
     ),
   );
-}
-
-Future<void> eliminarBaseDeDatos() async {
-  final path = join(await getDatabasesPath(), 'productos.db');
-  await deleteDatabase(path);
-  print('✅ Base de datos eliminada exitosamente');
 }
 
 class PasteleriaApp extends StatelessWidget {
