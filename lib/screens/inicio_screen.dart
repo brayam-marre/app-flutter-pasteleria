@@ -7,7 +7,6 @@ import '../screens/compras_screen.dart';
 import '../screens/calculos_screen.dart';
 import '../screens/productos_screen.dart';
 
-// NUEVOS SERVICIOS
 import '../services/producto_service.dart';
 import '../services/compra_service.dart';
 import '../services/receta_service.dart';
@@ -92,7 +91,7 @@ class _InicioScreenState extends State<InicioScreen> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
-              childAspectRatio: 1.5,
+              childAspectRatio: 2.0, // Más alargado
               children: [
                 _buildAnimatedHomeCard(Icons.shopping_cart, 'Registrar Compra', () {
                   if (idUsuario != null) {
@@ -163,12 +162,13 @@ class _InicioScreenState extends State<InicioScreen> {
             child: Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 10.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(icon, size: 26, color: Colors.pink),
-                    const SizedBox(height: 4),
+                    Icon(icon, size: 20, color: Colors.pink),
+                    const SizedBox(height: 6),
                     Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
                   ],
                 ),

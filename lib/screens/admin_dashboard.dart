@@ -32,14 +32,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     ];
   }
 
-
-  final List<String> _titulos = [
-    'Inicio',
-    'Cálculos',
-    'Compras',
-    'Productos',
-  ];
-
   void _onBottomNavTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -67,23 +59,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colorScheme.primary,
-        title: Text(_titulos[_selectedIndex]),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: _onMenuSelected,
-            icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => [
-              if (esAdmin)
-                const PopupMenuItem(value: 'Clientes', child: Text('Clientes')),
-              if (esAdmin)
-                const PopupMenuItem(value: 'Ajustes', child: Text('Ajustes')),
-              const PopupMenuItem(value: 'Cerrar Sesión', child: Text('Cerrar sesión')),
-            ],
-          ),
-        ],
-      ),
       body: _pantallas[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -98,6 +73,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
           BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Productos'),
         ],
       ),
+      floatingActionButton: PopupMenuButton<String>(
+        onSelected: _onMenuSelected,
+        icon: const Icon(Icons.more_vert),
+        itemBuilder: (context) => [
+          if (esAdmin)
+            const PopupMenuItem(value: 'Clientes', child: Text('Clientes')),
+          if (esAdmin)
+            const PopupMenuItem(value: 'Ajustes', child: Text('Ajustes')),
+          const PopupMenuItem(value: 'Cerrar Sesión', child: Text('Cerrar sesión')),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }
